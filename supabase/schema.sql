@@ -55,6 +55,9 @@ drop policy if exists "players see own transactions" on public.transactions;
 create policy "players see own transactions" on public.transactions for select to authenticated using (auth.uid()=from_id or auth.uid()=to_id);
 drop policy if exists "players see own requests" on public.payment_requests;
 create policy "players see own requests" on public.payment_requests for select to authenticated using (auth.uid()=requester_id or auth.uid()=payer_id);
+grant select on public.profiles to authenticated;
+grant select on public.transactions to authenticated;
+grant select on public.payment_requests to authenticated;
 
 create or replace function public.send_money(recipient uuid, coins bigint, memo text default '') returns void language plpgsql security definer set search_path=public as $$
 declare sender_balance bigint;
