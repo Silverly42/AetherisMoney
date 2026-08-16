@@ -39,7 +39,11 @@ create or replace function public.new_player() returns trigger language plpgsql 
 declare player_name text;
 begin
   player_name := initcap(split_part(new.email, '@', 1));
-  if player_name not in ('Lucca','Conor','Rhys','Aleesha') then raise exception 'Unknown player account'; end if;
+  -- Never block Supabase Authentication from creating a user. Only the four
+  -- approved game accounts receive a money profile.
+  if player_name is null or player_name not in ('Lucca','Conor','Rhys','Aleesha') then
+    return new;
+  end if;
   insert into public.profiles(id,name,is_admin) values(new.id,player_name,player_name='Rhys') on conflict do nothing;
   return new;
 end $$;
