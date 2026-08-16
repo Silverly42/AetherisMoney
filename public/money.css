@@ -1,0 +1,62 @@
+.balance::after {
+  content: "M$";
+  font-size: 120px;
+}
+
+.everyone {
+  margin-top: 20px;
+}
+
+.everyone h3 {
+  margin-bottom: 18px;
+  font-size: 1.35rem;
+}
+
+.player-balances {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.player-balance {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px;
+  background: #090d15;
+  border: 1px solid #202737;
+  border-radius: 14px;
+}
+
+.player-avatar {
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  flex: none;
+  border-radius: 11px;
+  background: linear-gradient(135deg, var(--purple), #4b3fa0);
+  font-weight: 900;
+}
+
+.player-balance div {
+  min-width: 0;
+}
+
+.player-balance small {
+  display: block;
+  margin-bottom: 4px;
+  color: #8d98aa;
+}
+
+.player-balance strong {
+  display: block;
+  color: var(--cyan);
+  white-space: nowrap;
+}
+
+@media (max-width: 650px) {
+  .player-balances {
+    grid-template-columns: 1fr;
+  }
+}
