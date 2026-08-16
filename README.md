@@ -1,6 +1,6 @@
 # Aetheris Money
 
-A small Minecraft-server economy web app with Lucca, Conor, Rhys, and Aleesha accounts, transfers, payment requests, transaction history, Supabase persistence, and an admin-only treasury.
+A small Minecraft-server economy web app with Lucca, Conor, Rhys, and Aleesha accounts, transfers, payment requests, transaction history, Supabase persistence, and an admin-only Bank.
 
 ## Run
 

@@ -107,7 +107,7 @@ begin
   if coins<1 or coins>1000000 then raise exception 'Invalid amount'; end if;
   update profiles set balance=balance+coins where id=recipient;
   if not found then raise exception 'Player not found'; end if;
-  insert into transactions(from_id,to_id,amount,note,kind) values(null,recipient,coins,'Treasury grant','grant');
+  insert into transactions(from_id,to_id,amount,note,kind) values(null,recipient,coins,'Bank grant','grant');
 end $$;
 
 create or replace function public.admin_adjust(recipient uuid, coins bigint) returns void language plpgsql security definer set search_path=public as $$

@@ -88,7 +88,7 @@ async function api(req, res) {
       const input = await body(req);
       if (!crypto.timingSafeEqual(Buffer.from(hash(String(input.adminPassword || ''))), Buffer.from(hash(ADMIN_PASSWORD)))) return json(res, 403, { error: 'Wrong admin password.' });
       const to = user(input.to); const n = amount(input.amount); if (!to) throw new Error('Player not found.');
-      to.balance += n; db.transactions.push({ id: db.nextId++, from: 'Aetheris Treasury', to: to.name, amount: n, note: 'Admin grant', at: new Date().toISOString() }); save();
+      to.balance += n; db.transactions.push({ id: db.nextId++, from: 'Bank', to: to.name, amount: n, note: 'Admin grant', at: new Date().toISOString() }); save();
       return json(res, 200, publicState(me));
     }
     return json(res, 404, { error: 'Not found.' });

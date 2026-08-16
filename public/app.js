@@ -3,7 +3,7 @@ const SUPABASE_KEY='sb_publishable_BdvjCbFkU_9sliZvRDR0mQ_fs3pbfuj';
 const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 let state={}; const $=id=>document.getElementById(id); const money=n=>Number(n).toLocaleString();
 function toast(message){$('toast').textContent=message;$('toast').classList.add('show');setTimeout(()=>$('toast').classList.remove('show'),2800)}
-function player(id){return state.users.find(u=>u.id===id)?.name||'Treasury'}
+function player(id){return state.users.find(u=>u.id===id)?.name||'Bank'}
 async function load(){
  const {data:{user}}=await db.auth.getUser(); if(!user)throw Error('Please log in.');
  const [profiles,requests,transactions]=await Promise.all([db.from('profiles').select('*').order('name'),db.from('payment_requests').select('*').eq('status','pending').order('created_at',{ascending:false}),db.from('transactions').select('*').order('created_at',{ascending:false}).limit(20)]);
