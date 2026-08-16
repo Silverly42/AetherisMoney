@@ -3,15 +3,15 @@
 <body>
   <main>
     <section id="login" class="login card"><div class="sigil">A</div><p class="eyebrow">AETHERIS NETWORK</p><h1>Money, made simple.</h1><p class="muted">Send, request, and manage your server currency.</p>
-      <form id="loginForm"><label>Account<select id="loginName"><option>Lucca</option><option>Conor</option><option>Rhys</option></select></label><label>Password<input id="loginPassword" type="password" required autocomplete="current-password"></label><button>Enter vault</button></form>
+      <form id="loginForm"><label>Account<select id="loginName"><option>Lucca</option><option>Conor</option><option>Rhys</option></select></label><label>Password<input id="loginPassword" type="password" required autocomplete="current-password"></label><button>Login</button></form>
     </section>
     <section id="app" hidden>
       <header><div><p class="eyebrow">AETHERIS MONEY</p><h2>Welcome, <span id="me"></span></h2></div><button class="ghost" id="logout">Log out</button></header>
       <div class="balance card"><p>Available balance</p><strong><small>M$</small> <span id="balance">0</span></strong><span class="status">● Server online</span></div>
-      <nav><button class="tab active" data-tab="send">Send</button><button class="tab" data-tab="request">Request</button><button class="tab" data-tab="admin">Give money</button></nav>
-      <section class="card panel" id="send"><h3>Send money</h3><form id="sendForm"><label>To<select id="sendTo"></select></label><label>Amount<input id="sendAmount" type="number" min="1" step="1" required></label><label>Note <span>(optional)</span><input id="sendNote" maxlength="80"></label><button>Send securely</button></form></section>
+      <nav><button class="tab active" data-tab="send">Send</button><button class="tab" data-tab="request">Request</button><button class="tab" data-tab="admin" hidden>Admin Panel</button></nav>
+      <section class="card panel" id="send"><h3>Send money</h3><form id="sendForm"><label>To<select id="sendTo"></select></label><label>Amount<input id="sendAmount" type="number" min="1" step="1" required></label><label>Note <span>(optional)</span><input id="sendNote" maxlength="80"></label><button>Send</button></form></section>
       <section class="card panel" id="request" hidden><h3>Request money</h3><form id="requestForm"><label>From<select id="requestFrom"></select></label><label>Amount<input id="requestAmount" type="number" min="1" step="1" required></label><label>Note <span>(optional)</span><input id="requestNote" maxlength="80"></label><button>Send request</button></form></section>
-      <section class="card panel" id="admin" hidden><h3>Treasury grant</h3><p class="muted">Only the Rhys administrator account can create money.</p><form id="adminForm"><label>Player<select id="adminTo"></select></label><label>Amount<input id="adminAmount" type="number" min="1" step="1" required></label><button>Give money</button></form></section>
+      <section class="card panel" id="admin" hidden><h3>Admin Panel</h3><p class="muted">Only the Rhys administrator account can add or remove money.</p><form id="adminForm"><label>Player<select id="adminTo"></select></label><label>Action<select id="adminAction"><option value="add">Add money</option><option value="remove">Remove money</option></select></label><label>Amount (M$)<input id="adminAmount" type="number" min="1" max="1000000" step="1" required></label><button>Update balance</button></form></section>
       <section class="card everyone"><div><p class="eyebrow">SERVER ECONOMY</p><h3>Everyone's Money</h3></div><div id="everyone" class="player-balances"></div></section>
       <section class="grid"><div class="card"><h3>Payment requests</h3><div id="requests" class="list"></div></div><div class="card"><h3>Recent activity</h3><div id="activity" class="list"></div></div></section>
     </section>
