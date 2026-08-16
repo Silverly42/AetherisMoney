@@ -114,8 +114,10 @@ begin
   insert into transactions(from_id,to_id,amount,note,kind) values(null,recipient,coins,'Bank grant','grant');
 end $$;
 
-create or replace function public.admin_adjust(recipient uuid, coins bigint) returns void language plpgsql security definer set search_path=public as $$
-declare current_balance bigint;
+-- Remove the old two-argument version when upgrading an existing installation.
+drop function if exists public.admin_adjust(uuid,bigint);
+create or replace function public.admin_adjust(recipient uuid, coins bigint, memo text default '') returns void language plpgsql security definer set search_path=public as $$
+declare current_balance bigint; adjustment_note text;
 begin
   if not exists(select 1 from profiles where id=auth.uid() and is_admin) then raise exception 'Admin only'; end if;
   if coins=0 or coins < -1000000 or coins > 1000000 then raise exception 'Invalid amount'; end if;
@@ -124,9 +126,11 @@ begin
   if current_balance + coins < 0 then raise exception 'Cannot remove more than the player has'; end if;
   update profiles set balance=balance+coins where id=recipient;
   if coins > 0 then
-    insert into transactions(from_id,to_id,amount,note,kind) values(null,recipient,coins,'Admin added money','grant');
+    adjustment_note := 'Admin added money' || case when btrim(coalesce(memo,''))='' then '' else ' — ' || btrim(memo) end;
+    insert into transactions(from_id,to_id,amount,note,kind) values(null,recipient,coins,left(adjustment_note,80),'grant');
   else
-    insert into transactions(from_id,to_id,amount,note,kind) values(recipient,recipient,abs(coins),'Admin removed money','grant');
+    adjustment_note := 'Admin removed money' || case when btrim(coalesce(memo,''))='' then '' else ' — ' || btrim(memo) end;
+    insert into transactions(from_id,to_id,amount,note,kind) values(recipient,recipient,abs(coins),left(adjustment_note,80),'grant');
   end if;
 end $$;
 
@@ -134,9 +138,9 @@ revoke all on function public.send_money(uuid,bigint,text) from public;
 revoke all on function public.request_money(uuid,bigint,text) from public;
 revoke all on function public.respond_request(bigint,boolean) from public;
 revoke all on function public.admin_give(uuid,bigint) from public;
-revoke all on function public.admin_adjust(uuid,bigint) from public;
+revoke all on function public.admin_adjust(uuid,bigint,text) from public;
 grant execute on function public.send_money(uuid,bigint,text) to authenticated;
 grant execute on function public.request_money(uuid,bigint,text) to authenticated;
 grant execute on function public.respond_request(bigint,boolean) to authenticated;
 grant execute on function public.admin_give(uuid,bigint) to authenticated;
-grant execute on function public.admin_adjust(uuid,bigint) to authenticated;
+grant execute on function public.admin_adjust(uuid,bigint,text) to authenticated;
