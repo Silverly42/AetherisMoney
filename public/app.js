@@ -27,6 +27,6 @@ $('sendForm').onsubmit=async e=>{e.preventDefault();try{await rpc('send_money',{
 $('requestForm').onsubmit=async e=>{e.preventDefault();try{await rpc('request_money',{payer:$('requestFrom').value,coins:Number($('requestAmount').value),memo:$('requestNote').value});e.target.reset()}catch(e){toast(e.message)}};
 $('adminForm').onsubmit=async e=>{e.preventDefault();try{const amount=Number($('adminAmount').value);const coins=$('adminAction').value==='remove'?-amount:amount;await rpc('admin_adjust',{recipient:$('adminTo').value,coins,memo:$('adminReason').value});e.target.reset()}catch(e){toast(e.message)}};
 $('requests').onclick=async e=>{const id=e.target.dataset.pay||e.target.dataset.decline;if(id)try{await rpc('respond_request',{request_id:Number(id),accept_request:Boolean(e.target.dataset.pay)})}catch(err){toast(err.message)}};
-document.querySelectorAll('.tab').forEach(btn=>btn.onclick=()=>{document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active',b===btn));['send','request','admin'].forEach(id=>$(id).hidden=id!==btn.dataset.tab)});
+document.querySelectorAll('.tab').forEach(btn=>btn.onclick=()=>{document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active',b===btn));['send','request','sell','admin'].forEach(id=>$(id).hidden=id!==btn.dataset.tab)});
 $('logout').onclick=async()=>{await db.auth.signOut();location.reload()};
 db.auth.getSession().then(({data})=>{if(data.session)load().then(()=>{$('login').hidden=true;$('app').hidden=false}).catch(e=>toast(e.message))});

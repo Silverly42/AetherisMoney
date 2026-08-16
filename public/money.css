@@ -55,8 +55,39 @@
   white-space: nowrap;
 }
 
+.sell-page {
+  max-width: 720px;
+}
+
+.sell-list {
+  display: grid;
+  gap: 8px;
+  margin-top: 20px;
+}
+
+.sell-list > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 12px 14px;
+  background: #090d15;
+  border: 1px solid #202737;
+  border-radius: 11px;
+}
+
+.sell-list strong {
+  flex: 0 0 auto;
+  color: var(--cyan);
+}
+
 @media (max-width: 650px) {
   .player-balances {
     grid-template-columns: 1fr;
+  }
+
+  .sell-list > div {
+    align-items: flex-start;
+    gap: 12px;
   }
 }

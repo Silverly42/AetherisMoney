@@ -8,9 +8,32 @@
     <section id="app" hidden>
       <header><div><p class="eyebrow">AETHERIS MONEY</p><h2>Welcome, <span id="me"></span></h2></div><button class="ghost" id="logout">Log out</button></header>
       <div class="balance card"><p>Available balance</p><strong><small>M$</small> <span id="balance">0</span></strong><span class="status">● Server online</span></div>
-      <nav><button class="tab active" data-tab="send">Send</button><button class="tab" data-tab="request">Request</button><button class="tab" data-tab="admin" hidden>Admin Panel</button></nav>
+      <nav><button class="tab active" data-tab="send">Send</button><button class="tab" data-tab="request">Request</button><button class="tab" data-tab="sell">Sell Page</button><button class="tab" data-tab="admin" hidden>Admin Panel</button></nav>
       <section class="card panel" id="send"><h3>Send money</h3><form id="sendForm"><label>To<select id="sendTo"></select></label><label>Amount<input id="sendAmount" type="number" min="1" step="1" required></label><label>Note <span>(optional)</span><input id="sendNote" maxlength="80"></label><button>Send</button></form></section>
       <section class="card panel" id="request" hidden><h3>Request money</h3><form id="requestForm"><label>From<select id="requestFrom"></select></label><label>Amount<input id="requestAmount" type="number" min="1" step="1" required></label><label>Note <span>(optional)</span><input id="requestNote" maxlength="80"></label><button>Send request</button></form></section>
+      <section class="card panel sell-page" id="sell" hidden><p class="eyebrow">SERVER SELL PRICES</p><h3>Sell Page</h3><p class="muted">Use this price list when selling items to the Bank.</p><div class="sell-list" role="list">
+        <div role="listitem"><span>Diamond</span><strong>1,000 M$</strong></div>
+        <div role="listitem"><span>Amethyst Shard</span><strong>150 M$</strong></div>
+        <div role="listitem"><span>Emerald</span><strong>75 M$</strong></div>
+        <div role="listitem"><span>Iron</span><strong>50 M$</strong></div>
+        <div role="listitem"><span>Gold</span><strong>125 M$</strong></div>
+        <div role="listitem"><span>Oak Log</span><strong>2 M$</strong></div>
+        <div role="listitem"><span>Spruce Log</span><strong>2 M$</strong></div>
+        <div role="listitem"><span>Cherry Log</span><strong>3 M$</strong></div>
+        <div role="listitem"><span>Jungle Log</span><strong>2 M$</strong></div>
+        <div role="listitem"><span>Dirt</span><strong>1 M$</strong></div>
+        <div role="listitem"><span>Gravel</span><strong>1 M$</strong></div>
+        <div role="listitem"><span>Stone</span><strong>5 M$</strong></div>
+        <div role="listitem"><span>Cobblestone / Other stone types</span><strong>1 M$</strong></div>
+        <div role="listitem"><span>Netherrack</span><strong>1 M$</strong></div>
+        <div role="listitem"><span>Netherite Scrap</span><strong>750 M$</strong></div>
+        <div role="listitem"><span>Ancient Debris</span><strong>500 M$</strong></div>
+        <div role="listitem"><span>Netherite Ingot</span><strong>4,000 M$</strong></div>
+        <div role="listitem"><span>Netherite Upgrade Template</span><strong>1,250 M$</strong></div>
+        <div role="listitem"><span>Furnace</span><strong>8 M$</strong></div>
+        <div role="listitem"><span>Nametag</span><strong>25 M$</strong></div>
+        <div role="listitem"><span>Any mob drop music disc</span><strong>3,000 M$</strong></div>
+      </div></section>
       <section class="card panel" id="admin" hidden><h3>Admin Panel</h3><p class="muted">Only the Rhys administrator account can add or remove money.</p><form id="adminForm"><label>Player<select id="adminTo"></select></label><label>Action<select id="adminAction"><option value="add">Add money</option><option value="remove">Remove money</option></select></label><label>Amount (M$)<input id="adminAmount" type="number" min="1" max="1000000" step="1" required></label><label>Reason <span>(optional)</span><input id="adminReason" maxlength="60" placeholder="e.g. Event reward"></label><button>Update balance</button></form></section>
       <section class="card everyone"><div><p class="eyebrow">SERVER ECONOMY</p><h3>Everyone's Money</h3></div><div id="everyone" class="player-balances"></div></section>
       <section class="grid"><div class="card"><h3>Payment requests</h3><div id="requests" class="list"></div></div><div class="card"><h3>Recent activity</h3><div id="activity" class="list"></div></div></section>
