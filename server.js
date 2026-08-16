@@ -14,7 +14,7 @@ const sessions = new Map();
 function hash(value) { return crypto.createHash('sha256').update(value).digest('hex'); }
 function initialDb() {
   return {
-    users: ['Lucca', 'Conor', 'Rhys'].map(name => ({ name, balance: 1000, passwordHash: hash(START_PASSWORD) })),
+    users: ['Lucca', 'Conor', 'Rhys', 'Aleesha'].map(name => ({ name, balance: 1000, passwordHash: hash(START_PASSWORD) })),
     requests: [], transactions: [], nextId: 1
   };
 }

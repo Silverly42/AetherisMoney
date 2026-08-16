@@ -3,11 +3,16 @@ create extension if not exists pgcrypto;
 
 create table if not exists public.profiles (
   id uuid primary key references auth.users(id) on delete cascade,
-  name text unique not null check (name in ('Lucca','Conor','Rhys')),
+  name text unique not null check (name in ('Lucca','Conor','Rhys','Aleesha')),
   balance bigint not null default 1000 check (balance >= 0),
   is_admin boolean not null default false,
   created_at timestamptz not null default now()
 );
+
+-- Upgrade an existing installation to accept every current player.
+alter table public.profiles drop constraint if exists profiles_name_check;
+alter table public.profiles add constraint profiles_name_check
+  check (name in ('Lucca','Conor','Rhys','Aleesha'));
 
 create table if not exists public.transactions (
   id bigint generated always as identity primary key,
@@ -34,7 +39,7 @@ create or replace function public.new_player() returns trigger language plpgsql 
 declare player_name text;
 begin
   player_name := initcap(split_part(new.email, '@', 1));
-  if player_name not in ('Lucca','Conor','Rhys') then raise exception 'Unknown player account'; end if;
+  if player_name not in ('Lucca','Conor','Rhys','Aleesha') then raise exception 'Unknown player account'; end if;
   insert into public.profiles(id,name,is_admin) values(new.id,player_name,player_name='Rhys') on conflict do nothing;
   return new;
 end $$;
@@ -44,7 +49,10 @@ create trigger on_auth_user_created after insert on auth.users for each row exec
 -- Backfill users if they were created before this script ran.
 insert into public.profiles(id,name,is_admin)
 select id, initcap(split_part(email,'@',1)), initcap(split_part(email,'@',1))='Rhys'
-from auth.users where lower(split_part(email,'@',1)) in ('lucca','conor','rhys') on conflict do nothing;
+from auth.users where lower(split_part(email,'@',1)) in ('lucca','conor','rhys','aleesha')
+on conflict (id) do update set
+  name=excluded.name,
+  is_admin=excluded.is_admin;
 
 alter table public.profiles enable row level security;
 alter table public.transactions enable row level security;
