@@ -148,7 +148,10 @@ grant execute on function public.admin_adjust(uuid,bigint,text) to authenticated
 -- Player marketplace -------------------------------------------------------
 do $$ begin
   alter table public.transactions drop constraint if exists transactions_kind_check;
-  alter table public.transactions add constraint transactions_kind_check check (kind in ('transfer','grant','marketplace'));
+  -- Include every transaction kind used anywhere in this schema. Existing
+  -- installations may already contain trade rows when the full schema is
+  -- rerun, so temporarily omitting "trade" makes this migration fail.
+  alter table public.transactions add constraint transactions_kind_check check (kind in ('transfer','grant','marketplace','trade'));
 exception when duplicate_object then null; end $$;
 
 create table if not exists public.shops (
