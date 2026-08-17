@@ -95,3 +95,11 @@ test('both preorder parties can finish or cancel pending orders',()=>{
   assert.match(schema,/auth\.uid\(\) in \(buyer_id,seller_id\)/);
   assert.match(schema,/finish_preorder then 'completed' else 'cancelled'/);
 });
+test('shop owners can securely delete their shops',()=>{
+  const app=fs.readFileSync('./public/app.js','utf8');
+  const schema=fs.readFileSync('./supabase/schema.sql','utf8');
+  assert.match(app,/data-delete-shop/);
+  assert.match(app,/delete_shop/);
+  assert.match(schema,/delete from shops where id=target_shop and owner_id=auth\.uid\(\)/);
+  assert.match(schema,/grant execute on function[\s\S]*public\.delete_shop\(bigint\)/);
+});

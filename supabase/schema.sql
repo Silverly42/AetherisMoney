@@ -464,6 +464,12 @@ begin
   if not found then raise exception 'That is not your shop'; end if;
 end $$;
 
+create or replace function public.delete_shop(target_shop bigint) returns void language plpgsql security definer set search_path=public as $$
+begin
+  delete from shops where id=target_shop and owner_id=auth.uid();
+  if not found then raise exception 'Shop not found or you do not own it'; end if;
+end $$;
+
 create or replace function public.add_shop_product(target_shop bigint, product_name text, unit_price numeric, quantity bigint) returns void language plpgsql security definer set search_path=public as $$
 begin
   if not exists(select 1 from shops where id=target_shop and owner_id=auth.uid()) then raise exception 'That is not your shop'; end if;
@@ -547,5 +553,5 @@ create or replace function public.get_all_activity() returns table(id bigint,fro
   select t.id,coalesce(f.name,'Bank'),coalesce(dest.name,'Bank'),t.amount,t.kind,t.created_at from transactions t left join profiles f on f.id=t.from_id left join profiles dest on dest.id=t.to_id where auth.uid() is not null order by t.created_at desc,t.id desc
 $$;
 
-revoke all on function public.send_money(uuid,numeric,text),public.request_money(uuid,numeric,text),public.respond_request(bigint,boolean),public.admin_adjust(uuid,numeric,text),public.create_shop(text,text,text,text,integer,integer,integer),public.update_shop(bigint,text,text,text,text,integer,integer,integer),public.add_shop_product(bigint,text,numeric,bigint),public.update_shop_product(bigint,text,numeric),public.adjust_shop_stock(bigint,bigint),public.delete_shop_product(bigint),public.buy_shop_product(bigint,bigint),public.create_preorder(bigint,bigint),public.respond_preorder(bigint,boolean),public.create_trade(uuid,jsonb,jsonb,numeric,numeric),public.respond_trade(bigint,boolean),public.get_all_activity() from public;
-grant execute on function public.send_money(uuid,numeric,text),public.request_money(uuid,numeric,text),public.respond_request(bigint,boolean),public.admin_adjust(uuid,numeric,text),public.create_shop(text,text,text,text,integer,integer,integer),public.update_shop(bigint,text,text,text,text,integer,integer,integer),public.add_shop_product(bigint,text,numeric,bigint),public.update_shop_product(bigint,text,numeric),public.adjust_shop_stock(bigint,bigint),public.delete_shop_product(bigint),public.buy_shop_product(bigint,bigint),public.create_preorder(bigint,bigint),public.respond_preorder(bigint,boolean),public.create_trade(uuid,jsonb,jsonb,numeric,numeric),public.respond_trade(bigint,boolean),public.get_all_activity() to authenticated;
+revoke all on function public.send_money(uuid,numeric,text),public.request_money(uuid,numeric,text),public.respond_request(bigint,boolean),public.admin_adjust(uuid,numeric,text),public.create_shop(text,text,text,text,integer,integer,integer),public.update_shop(bigint,text,text,text,text,integer,integer,integer),public.delete_shop(bigint),public.add_shop_product(bigint,text,numeric,bigint),public.update_shop_product(bigint,text,numeric),public.adjust_shop_stock(bigint,bigint),public.delete_shop_product(bigint),public.buy_shop_product(bigint,bigint),public.create_preorder(bigint,bigint),public.respond_preorder(bigint,boolean),public.create_trade(uuid,jsonb,jsonb,numeric,numeric),public.respond_trade(bigint,boolean),public.get_all_activity() from public;
+grant execute on function public.send_money(uuid,numeric,text),public.request_money(uuid,numeric,text),public.respond_request(bigint,boolean),public.admin_adjust(uuid,numeric,text),public.create_shop(text,text,text,text,integer,integer,integer),public.update_shop(bigint,text,text,text,text,integer,integer,integer),public.delete_shop(bigint),public.add_shop_product(bigint,text,numeric,bigint),public.update_shop_product(bigint,text,numeric),public.adjust_shop_stock(bigint,bigint),public.delete_shop_product(bigint),public.buy_shop_product(bigint,bigint),public.create_preorder(bigint,bigint),public.respond_preorder(bigint,boolean),public.create_trade(uuid,jsonb,jsonb,numeric,numeric),public.respond_trade(bigint,boolean),public.get_all_activity() to authenticated;
