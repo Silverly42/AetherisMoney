@@ -264,3 +264,88 @@ revoke all on function public.buy_shop_product(bigint,bigint) from public;
 revoke all on function public.create_preorder(bigint,bigint) from public;
 revoke all on function public.get_all_activity() from public;
 grant execute on function public.create_shop(text),public.add_shop_product(bigint,text,bigint,bigint),public.buy_shop_product(bigint,bigint),public.create_preorder(bigint,bigint),public.get_all_activity() to authenticated;
+
+-- Secure two-player trades -------------------------------------------------
+do $$ begin
+  alter table public.transactions drop constraint if exists transactions_kind_check;
+  alter table public.transactions add constraint transactions_kind_check check (kind in ('transfer','grant','marketplace','trade'));
+exception when duplicate_object then null; end $$;
+
+create table if not exists public.trades (
+  id bigint generated always as identity primary key,
+  initiator_id uuid not null references public.profiles(id) on delete cascade,
+  partner_id uuid not null references public.profiles(id) on delete cascade,
+  initiator_items jsonb not null default '[]'::jsonb,
+  partner_items jsonb not null default '[]'::jsonb,
+  initiator_money bigint not null default 0 check (initiator_money between 0 and 1000000),
+  partner_money bigint not null default 0 check (partner_money between 0 and 1000000),
+  status text not null default 'pending' check (status in ('pending','completed','declined','cancelled')),
+  created_at timestamptz not null default now(),
+  completed_at timestamptz,
+  check (initiator_id <> partner_id)
+);
+
+alter table public.trades enable row level security;
+drop policy if exists "players see own trades" on public.trades;
+create policy "players see own trades" on public.trades for select to authenticated using (auth.uid() in (initiator_id,partner_id));
+grant select on public.trades to authenticated;
+
+create or replace function public.valid_trade_items(items jsonb) returns boolean language sql immutable as $$
+  select jsonb_typeof(items)='array'
+    and jsonb_array_length(items) <= 12
+    and not exists (
+      select 1 from jsonb_array_elements(items) entry
+      where jsonb_typeof(entry) <> 'object'
+        or length(btrim(coalesce(entry->>'item',''))) not between 1 and 60
+        or coalesce((entry->>'quantity') ~ '^[1-9][0-9]{0,6}$',false)=false
+        or lower(entry->>'item') ~ '(^air$|^barrier$|^bedrock$|command block|debug stick|jigsaw|structure (block|void)|end (portal|gateway)|budding amethyst|reinforced deepslate|spawner|spawn egg|^vault$|^light$|knowledge book|test (block|instance block)|player head|^infested |suspicious (sand|gravel)|chorus plant|dirt path|frogspawn)'
+    )
+$$;
+
+-- Upgrade the shop RPC too, so technical/creative-only items cannot be added
+-- by bypassing the browser picker.
+create or replace function public.add_shop_product(target_shop bigint, product_name text, unit_price bigint, quantity bigint) returns void language plpgsql security definer set search_path=public as $$
+begin
+  if not exists(select 1 from shops where id=target_shop and owner_id=auth.uid()) then raise exception 'That is not your shop'; end if;
+  if length(btrim(coalesce(product_name,''))) not between 1 and 60 or unit_price not between 1 and 1000000 or quantity not between 1 and 1000000 then raise exception 'Invalid product'; end if;
+  if lower(product_name) ~ '(^air$|^barrier$|^bedrock$|command block|debug stick|jigsaw|structure (block|void)|end (portal|gateway)|budding amethyst|reinforced deepslate|spawner|spawn egg|^vault$|^light$|knowledge book|test (block|instance block)|player head|^infested |suspicious (sand|gravel)|chorus plant|dirt path|frogspawn)' then raise exception 'That item is not obtainable in survival'; end if;
+  insert into shop_products(shop_id,item_name,price,stock) values(target_shop,btrim(product_name),unit_price,quantity);
+end $$;
+
+create or replace function public.create_trade(partner uuid, my_items jsonb, requested_items jsonb, my_money bigint default 0, requested_money bigint default 0) returns void language plpgsql security definer set search_path=public as $$
+begin
+  if auth.uid() is null or partner=auth.uid() or not exists(select 1 from profiles where id=partner) then raise exception 'Invalid trade partner'; end if;
+  if my_money not between 0 and 1000000 or requested_money not between 0 and 1000000 then raise exception 'Invalid money amount'; end if;
+  if not valid_trade_items(my_items) or not valid_trade_items(requested_items) then raise exception 'Trade contains an invalid or unavailable item'; end if;
+  if jsonb_array_length(my_items)=0 and jsonb_array_length(requested_items)=0 and my_money=0 and requested_money=0 then raise exception 'Trade cannot be empty'; end if;
+  insert into trades(initiator_id,partner_id,initiator_items,partner_items,initiator_money,partner_money)
+  values(auth.uid(),partner,my_items,requested_items,my_money,requested_money);
+end $$;
+
+create or replace function public.respond_trade(trade_id bigint, accept_trade boolean) returns void language plpgsql security definer set search_path=public as $$
+declare offer trades; initiator_balance bigint; partner_balance bigint;
+begin
+  select * into offer from trades where id=trade_id and partner_id=auth.uid() and status='pending' for update;
+  if not found then raise exception 'Trade offer not found'; end if;
+  if not accept_trade then update trades set status='declined',completed_at=now() where id=trade_id; return; end if;
+  perform 1 from profiles where id in (offer.initiator_id,offer.partner_id) order by id for update;
+  select balance into initiator_balance from profiles where id=offer.initiator_id;
+  select balance into partner_balance from profiles where id=offer.partner_id;
+  if initiator_balance < offer.initiator_money or partner_balance < offer.partner_money then raise exception 'A player does not have enough money'; end if;
+  update profiles set balance=balance-offer.initiator_money+offer.partner_money where id=offer.initiator_id;
+  update profiles set balance=balance-offer.partner_money+offer.initiator_money where id=offer.partner_id;
+  if offer.initiator_money>0 then insert into transactions(from_id,to_id,amount,note,kind) values(offer.initiator_id,offer.partner_id,offer.initiator_money,'Player trade','trade'); end if;
+  if offer.partner_money>0 then insert into transactions(from_id,to_id,amount,note,kind) values(offer.partner_id,offer.initiator_id,offer.partner_money,'Player trade','trade'); end if;
+  update trades set status='completed',completed_at=now() where id=trade_id;
+end $$;
+
+create or replace function public.cancel_trade(trade_id bigint) returns void language plpgsql security definer set search_path=public as $$
+begin
+  update trades set status='cancelled',completed_at=now() where id=trade_id and initiator_id=auth.uid() and status='pending';
+  if not found then raise exception 'Trade offer not found'; end if;
+end $$;
+
+revoke all on function public.create_trade(uuid,jsonb,jsonb,bigint,bigint) from public;
+revoke all on function public.respond_trade(bigint,boolean) from public;
+revoke all on function public.cancel_trade(bigint) from public;
+grant execute on function public.create_trade(uuid,jsonb,jsonb,bigint,bigint),public.respond_trade(bigint,boolean),public.cancel_trade(bigint) to authenticated;

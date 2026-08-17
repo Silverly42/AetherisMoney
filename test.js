@@ -26,7 +26,24 @@ test('includes marketplace, shops, preorders, notifications, and all activity',(
 });
 test('Minecraft picker contains the complete 1.21.5 block dataset',()=>{
   const source = fs.readFileSync('./public/minecraft-blocks.js','utf8');
-  assert.ok((source.match(/","/g)||[]).length > 1000);
+  assert.ok((source.match(/","/g)||[]).length > 1200);
   assert.match(source,/Oak Log/);
   assert.match(source,/Cherry Log/);
+  assert.match(source,/Iron Ingot/);
+  assert.match(source,/Cooked Cod/);
+  assert.doesNotMatch(source,/"Air"/);
+  assert.doesNotMatch(source,/"Command Block"/);
+  assert.doesNotMatch(source,/"Debug Stick"/);
+  assert.doesNotMatch(source,/Spawn Egg/);
+  assert.doesNotMatch(source,/"Test Block"/);
+});
+test('includes secure player trading, money offers, values, and trade history',()=>{
+  const html = fs.readFileSync('./public/index.html','utf8');
+  const app = fs.readFileSync('./public/app.js','utf8');
+  const schema = fs.readFileSync('./supabase/schema.sql','utf8');
+  for(const text of ['data-tab="trade"','id="tradeForm"','id="tradeGiveMoney"','id="tradeGetMoney"','id="openTrades"','id="recentTrades"'])assert.match(html,new RegExp(text));
+  for(const text of ['create_trade','respond_trade','cancel_trade','Rough value'])assert.match(app,new RegExp(text));
+  assert.match(schema,/create table if not exists public\.trades/);
+  assert.match(schema,/create or replace function public\.respond_trade/);
+  assert.match(schema,/for update/);
 });
