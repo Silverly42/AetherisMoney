@@ -23,6 +23,8 @@ test('includes marketplace, shops, preorders, notifications, and all activity',(
   assert.match(app,/money-out/);
   assert.match(app,/money-in/);
   assert.match(app,/event\.kind==='grant'[\s\S]*Bank adjustment/);
+  assert.match(app,/event\.kind==='trade'\?'Player trade'/);
+  assert.match(schema,/where auth\.uid\(\) is not null order by t\.created_at desc limit 100/);
 });
 test('Minecraft picker contains the complete 1.21.5 block dataset',()=>{
   const source = fs.readFileSync('./public/minecraft-blocks.js','utf8');
