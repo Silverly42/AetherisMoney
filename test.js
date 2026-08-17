@@ -67,4 +67,7 @@ test('includes secure player trading, money offers, values, and trade history',(
   assert.match(schema,/create table if not exists public\.trades/);
   assert.match(schema,/create or replace function public\.respond_trade/);
   assert.match(schema,/for update/);
+  assert.match(app,/tradeGiveItem'\)\.value\.trim\(\).*addTradeItem\('give'\)/);
+  assert.match(app,/tradeGetItem'\)\.value\.trim\(\).*addTradeItem\('get'\)/);
+  assert.match(fs.readFileSync('./public/minecraft-blocks.js','utf8'),/"Enchanted Book"/);
 });
