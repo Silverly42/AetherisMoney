@@ -103,6 +103,9 @@
 .shop-creator summary { cursor: pointer; color: var(--cyan); font-weight: 800; }
 .shop-creator[open] summary { margin-bottom: 20px; }
 .shops { display: grid; grid-template-columns: 1fr; gap: 20px; }
+.shop-tabs { display: flex; gap: 8px; overflow-x: auto; padding: 2px 2px 8px; }
+.shop-tab { flex: 0 0 auto; background: transparent; border-color: #30384b; color: #8d98aa; white-space: nowrap; }
+.shop-tab.active { background: linear-gradient(135deg,var(--purple),#6741d9); border-color: transparent; color: #fff; }
 .shop-card { min-height: 190px; padding: 28px; }
 .shop-card h3 { font-size: 1.3rem; }
 .shop-card header { margin-bottom: 14px; }
@@ -116,6 +119,10 @@
 .product-actions .ghost { border-color: #30384b; }
 .activity-page { max-width: 720px; }
 .activity-page .list { margin-top: 18px; }
+.activity-values { display: grid; grid-template-columns: auto 1fr; gap: 3px 10px; align-items: center; margin-bottom: 8px; }
+.activity-values span { color: #bbc4d5; font-size: .85rem; }
+.money-out { color: #ff8299; }
+.money-in { color: #65e2c2; }
 .notifications { border-color: rgba(54,217,202,.28); }
 
 button:disabled { opacity: .45; cursor: not-allowed; }

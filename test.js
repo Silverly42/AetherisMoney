@@ -19,6 +19,9 @@ test('includes marketplace, shops, preorders, notifications, and all activity',(
   assert.match(html,/<details class="card shop-creator">/);
   assert.match(html,/placeholder="Shop name"/);
   assert.match(fs.readFileSync('./public/style.css','utf8'),/\[hidden\]\)\{display:none!important\}/);
+  assert.match(app,/data-shop-tab/);
+  assert.match(app,/money-out/);
+  assert.match(app,/money-in/);
 });
 test('Minecraft picker contains the complete 1.21.5 block dataset',()=>{
   const source = fs.readFileSync('./public/minecraft-blocks.js','utf8');
