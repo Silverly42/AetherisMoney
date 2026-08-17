@@ -65,6 +65,21 @@
   margin-top: 20px;
 }
 
+.price-rules {
+  display: grid;
+  gap: 6px;
+  margin-top: 18px;
+  padding: 14px;
+  color: #cbd5e1;
+  background: rgba(34, 211, 238, .08);
+  border: 1px solid rgba(34, 211, 238, .25);
+  border-radius: 11px;
+}
+
+.price-rules strong {
+  color: var(--cyan);
+}
+
 .sell-list > div {
   display: flex;
   align-items: center;

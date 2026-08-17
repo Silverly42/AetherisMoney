@@ -11,7 +11,7 @@
       <nav><button class="tab active" data-tab="send">Send</button><button class="tab" data-tab="request">Request</button><button class="tab" data-tab="sell">Sell Page</button><button class="tab" data-tab="admin" hidden>Admin Panel</button></nav>
       <section class="card panel" id="send"><h3>Send money</h3><form id="sendForm"><label>To<select id="sendTo"></select></label><label>Amount<input id="sendAmount" type="number" min="1" step="1" required></label><label>Note <span>(optional)</span><input id="sendNote" maxlength="80"></label><button>Send</button></form></section>
       <section class="card panel" id="request" hidden><h3>Request money</h3><form id="requestForm"><label>From<select id="requestFrom"></select></label><label>Amount<input id="requestAmount" type="number" min="1" step="1" required></label><label>Note <span>(optional)</span><input id="requestNote" maxlength="80"></label><button>Send request</button></form></section>
-      <section class="card panel sell-page" id="sell" hidden><p class="eyebrow">SERVER SELL PRICES</p><h3>Sell Page</h3><p class="muted">Use this price list when selling items to the Bank.</p><div class="sell-list" role="list">
+      <section class="card panel sell-page" id="sell" hidden><p class="eyebrow">SERVER SELL PRICES</p><h3>Sell Page</h3><p class="muted">Use this price list when selling items to the Bank.</p><div class="price-rules"><strong>Conversion rules</strong><span>All block types are worth 9× the listed item price.</span><span>Nuggets are worth one-ninth of the listed item price.</span></div><div class="sell-list" role="list">
         <div role="listitem"><span>Diamond</span><strong>2,250 M$</strong></div>
         <div role="listitem"><span>Amethyst Shard</span><strong>450 M$</strong></div>
         <div role="listitem"><span>Emerald</span><strong>225 M$</strong></div>
@@ -23,10 +23,12 @@
         <div role="listitem"><span>Cherry Log</span><strong>5 M$</strong></div>
         <div role="listitem"><span>Jungle Log</span><strong>5 M$</strong></div>
         <div role="listitem"><span>Wheat</span><strong>7.5 M$ each</strong></div>
-        <div role="listitem"><span>Sugar Cane</span><strong>10 M$ each</strong></div>
+        <div role="listitem"><span>Sugar Cane</span><strong>12.5 M$ each</strong></div>
         <div role="listitem"><span>Carrots</span><strong>7.5 M$ each</strong></div>
         <div role="listitem"><span>Potatoes</span><strong>7.5 M$ each</strong></div>
         <div role="listitem"><span>Baked Potatoes</span><strong>20 M$ each</strong></div>
+        <div role="listitem"><span>Raw Fish (all types)</span><strong>15 M$ each</strong></div>
+        <div role="listitem"><span>Cooked Fish (all types)</span><strong>20 M$ each</strong></div>
         <div role="listitem"><span>Dirt</span><strong>1 M$</strong></div>
         <div role="listitem"><span>Gravel</span><strong>1 M$</strong></div>
         <div role="listitem"><span>Stone</span><strong>5 M$</strong></div>
