@@ -263,6 +263,10 @@ begin
   update preorders set status=case when finish_preorder then 'completed' else 'cancelled' end where id=preorder_id;
 end $$;
 
+-- An existing installation may already have the later decimal-returning
+-- version. PostgreSQL cannot change OUT parameter types with CREATE OR
+-- REPLACE, so remove it before this compatibility definition is created.
+drop function if exists public.get_all_activity();
 create or replace function public.get_all_activity() returns table(id bigint,from_name text,to_name text,amount bigint,kind text,created_at timestamptz) language sql stable security definer set search_path=public as $$
   select t.id,coalesce(f.name,'Bank'),coalesce(dest.name,'Bank'),t.amount,t.kind,t.created_at
   from transactions t left join profiles f on f.id=t.from_id left join profiles dest on dest.id=t.to_id

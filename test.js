@@ -32,6 +32,12 @@ test('all activity is not capped and uses deterministic newest-first ordering',(
   assert.doesNotMatch(schema,/get_all_activity[\s\S]*?limit\s+100/i);
   assert.match(schema,/order by t\.created_at desc, t\.id desc/);
 });
+test('schema can replace an existing decimal all-activity function',()=>{
+  const schema=fs.readFileSync('supabase/schema.sql','utf8');
+  const firstDefinition=schema.indexOf('create or replace function public.get_all_activity()');
+  const precedingDrop=schema.indexOf('drop function if exists public.get_all_activity()');
+  assert.ok(precedingDrop>=0 && precedingDrop<firstDefinition);
+});
 test('supports decimal currency and owner-managed customizable shops',()=>{
   const html=fs.readFileSync('./public/index.html','utf8');
   const app=fs.readFileSync('./public/app.js','utf8');
