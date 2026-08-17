@@ -24,7 +24,13 @@ test('includes marketplace, shops, preorders, notifications, and all activity',(
   assert.match(app,/money-in/);
   assert.match(app,/event\.kind==='grant'[\s\S]*Bank adjustment/);
   assert.match(app,/event\.kind==='trade'\?'Player trade'/);
-  assert.match(schema,/where auth\.uid\(\) is not null order by t\.created_at desc limit 100/);
+  assert.match(schema,/where auth\.uid\(\) is not null order by t\.created_at desc, t\.id desc/);
+});
+
+test('all activity is not capped and uses deterministic newest-first ordering',()=>{
+  const schema=fs.readFileSync('supabase/schema.sql','utf8');
+  assert.doesNotMatch(schema,/get_all_activity[\s\S]*?limit\s+100/i);
+  assert.match(schema,/order by t\.created_at desc, t\.id desc/);
 });
 test('Minecraft picker contains the complete 1.21.5 block dataset',()=>{
   const source = fs.readFileSync('./public/minecraft-blocks.js','utf8');

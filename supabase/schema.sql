@@ -255,7 +255,7 @@ end $$;
 create or replace function public.get_all_activity() returns table(id bigint,from_name text,to_name text,amount bigint,kind text,created_at timestamptz) language sql stable security definer set search_path=public as $$
   select t.id,coalesce(f.name,'Bank'),coalesce(dest.name,'Bank'),t.amount,t.kind,t.created_at
   from transactions t left join profiles f on f.id=t.from_id left join profiles dest on dest.id=t.to_id
-  where auth.uid() is not null order by t.created_at desc limit 100
+  where auth.uid() is not null order by t.created_at desc, t.id desc
 $$;
 
 revoke all on function public.create_shop(text) from public;
