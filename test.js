@@ -86,3 +86,12 @@ test('shops support Minecraft and custom listings',()=>{
   assert.match(app,/product=>product\.shop_id===shop\.id\)/);
   assert.match(app,/custom item or service|special offer/i);
 });
+test('both preorder parties can finish or cancel pending orders',()=>{
+  const app=fs.readFileSync('./public/app.js','utf8');
+  const schema=fs.readFileSync('./supabase/schema.sql','utf8');
+  assert.match(app,/data-preorder-finish/);
+  assert.match(app,/data-preorder-cancel/);
+  assert.match(app,/respond_preorder/);
+  assert.match(schema,/auth\.uid\(\) in \(buyer_id,seller_id\)/);
+  assert.match(schema,/finish_preorder then 'completed' else 'cancelled'/);
+});

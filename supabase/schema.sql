@@ -252,6 +252,14 @@ begin
   insert into shop_notifications(buyer_id,seller_id,shop_id,item_name,quantity,total,event_kind) values(auth.uid(),shop.owner_id,shop.id,product.item_name,quantity,product.price*quantity,'preorder');
 end $$;
 
+create or replace function public.respond_preorder(preorder_id bigint, finish_preorder boolean) returns void language plpgsql security definer set search_path=public as $$
+declare target preorders;
+begin
+  select * into target from preorders where id=preorder_id and auth.uid() in (buyer_id,seller_id) and status='pending' for update;
+  if not found then raise exception 'Pending preorder not found'; end if;
+  update preorders set status=case when finish_preorder then 'completed' else 'cancelled' end where id=preorder_id;
+end $$;
+
 create or replace function public.get_all_activity() returns table(id bigint,from_name text,to_name text,amount bigint,kind text,created_at timestamptz) language sql stable security definer set search_path=public as $$
   select t.id,coalesce(f.name,'Bank'),coalesce(dest.name,'Bank'),t.amount,t.kind,t.created_at
   from transactions t left join profiles f on f.id=t.from_id left join profiles dest on dest.id=t.to_id
@@ -539,5 +547,5 @@ create or replace function public.get_all_activity() returns table(id bigint,fro
   select t.id,coalesce(f.name,'Bank'),coalesce(dest.name,'Bank'),t.amount,t.kind,t.created_at from transactions t left join profiles f on f.id=t.from_id left join profiles dest on dest.id=t.to_id where auth.uid() is not null order by t.created_at desc,t.id desc
 $$;
 
-revoke all on function public.send_money(uuid,numeric,text),public.request_money(uuid,numeric,text),public.respond_request(bigint,boolean),public.admin_adjust(uuid,numeric,text),public.create_shop(text,text,text,text,integer,integer,integer),public.update_shop(bigint,text,text,text,text,integer,integer,integer),public.add_shop_product(bigint,text,numeric,bigint),public.update_shop_product(bigint,text,numeric),public.adjust_shop_stock(bigint,bigint),public.delete_shop_product(bigint),public.buy_shop_product(bigint,bigint),public.create_preorder(bigint,bigint),public.create_trade(uuid,jsonb,jsonb,numeric,numeric),public.respond_trade(bigint,boolean),public.get_all_activity() from public;
-grant execute on function public.send_money(uuid,numeric,text),public.request_money(uuid,numeric,text),public.respond_request(bigint,boolean),public.admin_adjust(uuid,numeric,text),public.create_shop(text,text,text,text,integer,integer,integer),public.update_shop(bigint,text,text,text,text,integer,integer,integer),public.add_shop_product(bigint,text,numeric,bigint),public.update_shop_product(bigint,text,numeric),public.adjust_shop_stock(bigint,bigint),public.delete_shop_product(bigint),public.buy_shop_product(bigint,bigint),public.create_preorder(bigint,bigint),public.create_trade(uuid,jsonb,jsonb,numeric,numeric),public.respond_trade(bigint,boolean),public.get_all_activity() to authenticated;
+revoke all on function public.send_money(uuid,numeric,text),public.request_money(uuid,numeric,text),public.respond_request(bigint,boolean),public.admin_adjust(uuid,numeric,text),public.create_shop(text,text,text,text,integer,integer,integer),public.update_shop(bigint,text,text,text,text,integer,integer,integer),public.add_shop_product(bigint,text,numeric,bigint),public.update_shop_product(bigint,text,numeric),public.adjust_shop_stock(bigint,bigint),public.delete_shop_product(bigint),public.buy_shop_product(bigint,bigint),public.create_preorder(bigint,bigint),public.respond_preorder(bigint,boolean),public.create_trade(uuid,jsonb,jsonb,numeric,numeric),public.respond_trade(bigint,boolean),public.get_all_activity() from public;
+grant execute on function public.send_money(uuid,numeric,text),public.request_money(uuid,numeric,text),public.respond_request(bigint,boolean),public.admin_adjust(uuid,numeric,text),public.create_shop(text,text,text,text,integer,integer,integer),public.update_shop(bigint,text,text,text,text,integer,integer,integer),public.add_shop_product(bigint,text,numeric,bigint),public.update_shop_product(bigint,text,numeric),public.adjust_shop_stock(bigint,bigint),public.delete_shop_product(bigint),public.buy_shop_product(bigint,bigint),public.create_preorder(bigint,bigint),public.respond_preorder(bigint,boolean),public.create_trade(uuid,jsonb,jsonb,numeric,numeric),public.respond_trade(bigint,boolean),public.get_all_activity() to authenticated;
