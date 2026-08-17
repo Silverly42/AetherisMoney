@@ -14,7 +14,7 @@
       <section class="marketplace" id="buy" hidden>
         <div class="market-head"><div><p class="eyebrow">PLAYER MARKETPLACE</p><h3>Buy &amp; Shops</h3><p class="muted">Browse player shops, buy stock instantly, or place a preorder.</p></div><span class="shop-limit" id="shopAllowance">3 shops available this week</span></div>
         <div class="market-tools">
-          <section class="card"><h3>Create a shop</h3><form id="shopForm"><label>Shop name<input id="shopName" maxlength="45" placeholder="Lumbery Liam's Shop" required></label><button>Create shop</button></form></section>
+          <details class="card shop-creator"><summary>Create a shop</summary><form id="shopForm"><label>Shop name<input id="shopName" maxlength="45" placeholder="Shop name" required></label><button>Create shop</button></form></details>
           <section class="card"><h3>Add something to sell</h3><form id="listingForm"><label>Your shop<select id="listingShop" required></select></label><label>Minecraft block or custom item<input id="listingItem" list="minecraftBlocks" maxlength="60" placeholder="Oak Log" required></label><label>Price each (M$)<input id="listingPrice" type="number" min="1" max="1000000" step="1" required></label><label>Stock<input id="listingStock" type="number" min="1" max="1000000" step="1" required></label><button>Add to shop</button></form></section>
         </div>
         <datalist id="minecraftBlocks"></datalist>

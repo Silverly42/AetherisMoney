@@ -16,6 +16,9 @@ test('includes marketplace, shops, preorders, notifications, and all activity',(
   for (const text of ['data-tab="buy"','data-tab="allActivity"','id="shopForm"','id="preorders"','id="notifications"']) assert.match(html,new RegExp(text));
   for (const rpc of ['create_shop','add_shop_product','buy_shop_product','create_preorder','get_all_activity']) assert.match(app,new RegExp(rpc));
   assert.match(schema,/three shops in the last 7 days/);
+  assert.match(html,/<details class="card shop-creator">/);
+  assert.match(html,/placeholder="Shop name"/);
+  assert.match(fs.readFileSync('./public/style.css','utf8'),/\[hidden\]\)\{display:none!important\}/);
 });
 test('Minecraft picker contains the complete 1.21.5 block dataset',()=>{
   const source = fs.readFileSync('./public/minecraft-blocks.js','utf8');

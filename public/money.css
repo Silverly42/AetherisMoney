@@ -100,8 +100,11 @@
 .market-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
 .shop-limit { padding: 9px 12px; border: 1px solid rgba(54,217,202,.35); border-radius: 999px; color: var(--cyan); font-size: .78rem; white-space: nowrap; }
 .market-tools,.market-bottom { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-.shops { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 16px; }
-.shop-card { padding: 20px; }
+.shop-creator summary { cursor: pointer; color: var(--cyan); font-weight: 800; }
+.shop-creator[open] summary { margin-bottom: 20px; }
+.shops { display: grid; grid-template-columns: 1fr; gap: 20px; }
+.shop-card { min-height: 190px; padding: 28px; }
+.shop-card h3 { font-size: 1.3rem; }
 .shop-card header { margin-bottom: 14px; }
 .shop-card header small { color: #8d98aa; }
 .product { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 8px 14px; align-items: center; padding: 12px 0; border-top: 1px solid #252c3b; }
