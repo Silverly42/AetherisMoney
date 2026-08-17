@@ -78,3 +78,11 @@ test('previews totals and resulting balances for money actions',()=>{
   assert.match(app,/Balance after: M\$/);
   assert.match(app,/Total: M\$/);
 });
+test('shops support Minecraft and custom listings',()=>{
+  const html=fs.readFileSync('./public/index.html','utf8');
+  const app=fs.readFileSync('./public/app.js','utf8');
+  assert.match(html,/id="listingType"/);
+  for(const option of ['Minecraft block','Minecraft item','Custom item or service'])assert.match(html,new RegExp(option));
+  assert.match(app,/product=>product\.shop_id===shop\.id\)/);
+  assert.match(app,/custom item or service|special offer/i);
+});
