@@ -144,3 +144,123 @@ grant execute on function public.request_money(uuid,bigint,text) to authenticate
 grant execute on function public.respond_request(bigint,boolean) to authenticated;
 grant execute on function public.admin_give(uuid,bigint) to authenticated;
 grant execute on function public.admin_adjust(uuid,bigint,text) to authenticated;
+
+-- Player marketplace -------------------------------------------------------
+do $$ begin
+  alter table public.transactions drop constraint if exists transactions_kind_check;
+  alter table public.transactions add constraint transactions_kind_check check (kind in ('transfer','grant','marketplace'));
+exception when duplicate_object then null; end $$;
+
+create table if not exists public.shops (
+  id bigint generated always as identity primary key,
+  owner_id uuid not null references public.profiles(id) on delete cascade,
+  name text not null check (length(btrim(name)) between 2 and 45),
+  created_at timestamptz not null default now()
+);
+
+create table if not exists public.shop_products (
+  id bigint generated always as identity primary key,
+  shop_id bigint not null references public.shops(id) on delete cascade,
+  item_name text not null check (length(btrim(item_name)) between 1 and 60),
+  price bigint not null check (price between 1 and 1000000),
+  stock bigint not null check (stock between 0 and 1000000),
+  created_at timestamptz not null default now()
+);
+
+create table if not exists public.preorders (
+  id bigint generated always as identity primary key,
+  buyer_id uuid not null references public.profiles(id) on delete cascade,
+  seller_id uuid not null references public.profiles(id) on delete cascade,
+  product_id bigint not null references public.shop_products(id) on delete cascade,
+  quantity bigint not null check (quantity between 1 and 1000000),
+  status text not null default 'pending' check (status in ('pending','completed','cancelled')),
+  created_at timestamptz not null default now(),
+  check (buyer_id <> seller_id)
+);
+
+create table if not exists public.shop_notifications (
+  id bigint generated always as identity primary key,
+  buyer_id uuid not null references public.profiles(id) on delete cascade,
+  seller_id uuid not null references public.profiles(id) on delete cascade,
+  shop_id bigint not null references public.shops(id) on delete cascade,
+  item_name text not null,
+  quantity bigint not null,
+  total bigint not null default 0,
+  event_kind text not null check (event_kind in ('purchase','preorder')),
+  created_at timestamptz not null default now()
+);
+
+alter table public.shops enable row level security;
+alter table public.shop_products enable row level security;
+alter table public.preorders enable row level security;
+alter table public.shop_notifications enable row level security;
+drop policy if exists "players see shops" on public.shops;
+create policy "players see shops" on public.shops for select to authenticated using (true);
+drop policy if exists "players see products" on public.shop_products;
+create policy "players see products" on public.shop_products for select to authenticated using (true);
+drop policy if exists "players see own preorders" on public.preorders;
+create policy "players see own preorders" on public.preorders for select to authenticated using (auth.uid() in (buyer_id,seller_id));
+drop policy if exists "players see own shop notifications" on public.shop_notifications;
+create policy "players see own shop notifications" on public.shop_notifications for select to authenticated using (auth.uid() in (buyer_id,seller_id));
+grant select on public.shops,public.shop_products,public.preorders,public.shop_notifications to authenticated;
+
+create or replace function public.create_shop(shop_name text) returns void language plpgsql security definer set search_path=public as $$
+begin
+  if auth.uid() is null then raise exception 'Please log in'; end if;
+  if length(btrim(coalesce(shop_name,''))) not between 2 and 45 then raise exception 'Shop name must be 2–45 characters'; end if;
+  if (select count(*) from shops where owner_id=auth.uid() and created_at >= now()-interval '7 days') >= 3 then
+    raise exception 'You have already created three shops in the last 7 days';
+  end if;
+  insert into shops(owner_id,name) values(auth.uid(),btrim(shop_name));
+end $$;
+
+create or replace function public.add_shop_product(target_shop bigint, product_name text, unit_price bigint, quantity bigint) returns void language plpgsql security definer set search_path=public as $$
+begin
+  if not exists(select 1 from shops where id=target_shop and owner_id=auth.uid()) then raise exception 'That is not your shop'; end if;
+  if length(btrim(coalesce(product_name,''))) not between 1 and 60 or unit_price not between 1 and 1000000 or quantity not between 1 and 1000000 then raise exception 'Invalid product'; end if;
+  insert into shop_products(shop_id,item_name,price,stock) values(target_shop,btrim(product_name),unit_price,quantity);
+end $$;
+
+create or replace function public.buy_shop_product(target_product bigint, quantity bigint default 1) returns void language plpgsql security definer set search_path=public as $$
+declare product shop_products; shop shops; buyer_balance bigint; total_cost bigint;
+begin
+  if auth.uid() is null or quantity not between 1 and 1000000 then raise exception 'Invalid purchase'; end if;
+  select * into product from shop_products where id=target_product for update;
+  if not found or product.stock < quantity then raise exception 'Not enough stock'; end if;
+  select * into shop from shops where id=product.shop_id;
+  if shop.owner_id=auth.uid() then raise exception 'You cannot buy from your own shop'; end if;
+  total_cost := product.price*quantity;
+  if total_cost>1000000 then raise exception 'Purchase is too large'; end if;
+  select balance into buyer_balance from profiles where id=auth.uid() for update;
+  if buyer_balance<total_cost then raise exception 'Not enough money'; end if;
+  update profiles set balance=balance-total_cost where id=auth.uid();
+  update profiles set balance=balance+total_cost where id=shop.owner_id;
+  update shop_products set stock=stock-quantity where id=product.id;
+  insert into transactions(from_id,to_id,amount,note,kind) values(auth.uid(),shop.owner_id,total_cost,left('Bought '||quantity||' × '||product.item_name||' from '||shop.name,80),'marketplace');
+  insert into shop_notifications(buyer_id,seller_id,shop_id,item_name,quantity,total,event_kind) values(auth.uid(),shop.owner_id,shop.id,product.item_name,quantity,total_cost,'purchase');
+end $$;
+
+create or replace function public.create_preorder(target_product bigint, quantity bigint default 1) returns void language plpgsql security definer set search_path=public as $$
+declare product shop_products; shop shops;
+begin
+  if auth.uid() is null or quantity not between 1 and 1000000 then raise exception 'Invalid preorder'; end if;
+  select * into product from shop_products where id=target_product;
+  if not found then raise exception 'Product not found'; end if;
+  select * into shop from shops where id=product.shop_id;
+  if shop.owner_id=auth.uid() then raise exception 'You cannot preorder from your own shop'; end if;
+  insert into preorders(buyer_id,seller_id,product_id,quantity) values(auth.uid(),shop.owner_id,product.id,quantity);
+  insert into shop_notifications(buyer_id,seller_id,shop_id,item_name,quantity,total,event_kind) values(auth.uid(),shop.owner_id,shop.id,product.item_name,quantity,product.price*quantity,'preorder');
+end $$;
+
+create or replace function public.get_all_activity() returns table(id bigint,from_name text,to_name text,amount bigint,kind text,created_at timestamptz) language sql stable security definer set search_path=public as $$
+  select t.id,coalesce(f.name,'Bank'),coalesce(dest.name,'Bank'),t.amount,t.kind,t.created_at
+  from transactions t left join profiles f on f.id=t.from_id left join profiles dest on dest.id=t.to_id
+  where auth.uid() is not null order by t.created_at desc limit 100
+$$;
+
+revoke all on function public.create_shop(text) from public;
+revoke all on function public.add_shop_product(bigint,text,bigint,bigint) from public;
+revoke all on function public.buy_shop_product(bigint,bigint) from public;
+revoke all on function public.create_preorder(bigint,bigint) from public;
+revoke all on function public.get_all_activity() from public;
+grant execute on function public.create_shop(text),public.add_shop_product(bigint,text,bigint,bigint),public.buy_shop_product(bigint,bigint),public.create_preorder(bigint,bigint),public.get_all_activity() to authenticated;

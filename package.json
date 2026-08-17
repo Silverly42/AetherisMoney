@@ -3,8 +3,14 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
+    "build:blocks": "node scripts/build-block-list.js",
     "start": "node server.js",
     "test": "node --test"
   },
-  "engines": { "node": ">=20" }
+  "engines": {
+    "node": ">=20"
+  },
+  "devDependencies": {
+    "minecraft-data": "^3.113.2"
+  }
 }

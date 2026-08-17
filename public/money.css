@@ -96,6 +96,27 @@
   color: var(--cyan);
 }
 
+.marketplace { display: grid; gap: 20px; }
+.market-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
+.shop-limit { padding: 9px 12px; border: 1px solid rgba(54,217,202,.35); border-radius: 999px; color: var(--cyan); font-size: .78rem; white-space: nowrap; }
+.market-tools,.market-bottom { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.shops { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 16px; }
+.shop-card { padding: 20px; }
+.shop-card header { margin-bottom: 14px; }
+.shop-card header small { color: #8d98aa; }
+.product { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 8px 14px; align-items: center; padding: 12px 0; border-top: 1px solid #252c3b; }
+.product:first-child { border-top: 0; }
+.product p,.product small { margin: 0; }
+.product small { color: #8d98aa; }
+.product-actions { display: flex; gap: 6px; }
+.product-actions button { padding: 7px 9px; font-size: .72rem; }
+.product-actions .ghost { border-color: #30384b; }
+.activity-page { max-width: 720px; }
+.activity-page .list { margin-top: 18px; }
+.notifications { border-color: rgba(54,217,202,.28); }
+
+button:disabled { opacity: .45; cursor: not-allowed; }
+
 @media (max-width: 650px) {
   .player-balances {
     grid-template-columns: 1fr;
@@ -105,4 +126,7 @@
     align-items: flex-start;
     gap: 12px;
   }
+
+  .market-head { display: grid; }
+  .market-tools,.market-bottom,.shops { grid-template-columns: 1fr; }
 }

@@ -8,9 +8,20 @@
     <section id="app" hidden>
       <header><div><p class="eyebrow">AETHERIS MONEY</p><h2>Welcome, <span id="me"></span></h2></div><button class="ghost" id="logout">Log out</button></header>
       <div class="balance card"><p>Available balance</p><strong><small>M$</small> <span id="balance">0</span></strong><span class="status">● Server online</span></div>
-      <nav><button class="tab active" data-tab="send">Send</button><button class="tab" data-tab="request">Request</button><button class="tab" data-tab="sell">Sell Page</button><button class="tab" data-tab="admin" hidden>Admin Panel</button></nav>
+      <nav><button class="tab active" data-tab="send">Send</button><button class="tab" data-tab="request">Request</button><button class="tab" data-tab="buy">Buy</button><button class="tab" data-tab="allActivity">All Activity</button><button class="tab" data-tab="sell">Sell Page</button><button class="tab" data-tab="admin" hidden>Admin Panel</button></nav>
       <section class="card panel" id="send"><h3>Send money</h3><form id="sendForm"><label>To<select id="sendTo"></select></label><label>Amount<input id="sendAmount" type="number" min="1" step="1" required></label><label>Note <span>(optional)</span><input id="sendNote" maxlength="80"></label><button>Send</button></form></section>
       <section class="card panel" id="request" hidden><h3>Request money</h3><form id="requestForm"><label>From<select id="requestFrom"></select></label><label>Amount<input id="requestAmount" type="number" min="1" step="1" required></label><label>Note <span>(optional)</span><input id="requestNote" maxlength="80"></label><button>Send request</button></form></section>
+      <section class="marketplace" id="buy" hidden>
+        <div class="market-head"><div><p class="eyebrow">PLAYER MARKETPLACE</p><h3>Buy &amp; Shops</h3><p class="muted">Browse player shops, buy stock instantly, or place a preorder.</p></div><span class="shop-limit" id="shopAllowance">3 shops available this week</span></div>
+        <div class="market-tools">
+          <section class="card"><h3>Create a shop</h3><form id="shopForm"><label>Shop name<input id="shopName" maxlength="45" placeholder="Lumbery Liam's Shop" required></label><button>Create shop</button></form></section>
+          <section class="card"><h3>Add something to sell</h3><form id="listingForm"><label>Your shop<select id="listingShop" required></select></label><label>Minecraft block or custom item<input id="listingItem" list="minecraftBlocks" maxlength="60" placeholder="Oak Log" required></label><label>Price each (M$)<input id="listingPrice" type="number" min="1" max="1000000" step="1" required></label><label>Stock<input id="listingStock" type="number" min="1" max="1000000" step="1" required></label><button>Add to shop</button></form></section>
+        </div>
+        <datalist id="minecraftBlocks"></datalist>
+        <div id="shops" class="shops"></div>
+        <div class="market-bottom"><section class="card"><h3>My preorders</h3><div id="preorders" class="list"></div></section><section class="card notifications"><h3>Shop notifications</h3><div id="notifications" class="list"></div></section></div>
+      </section>
+      <section class="card panel activity-page" id="allActivity" hidden><p class="eyebrow">SERVER LEDGER</p><h3>All Activity</h3><p class="muted">A privacy-safe history of transfers, grants, and marketplace purchases.</p><div id="activityFeed" class="list"></div></section>
       <section class="card panel sell-page" id="sell" hidden><p class="eyebrow">SERVER SELL PRICES</p><h3>Sell Page</h3><p class="muted">Use this price list when selling items to the Bank.</p><div class="price-rules"><strong>Conversion rules</strong><span>All block types are worth 9× the listed item price.</span><span>Nuggets are worth one-ninth of the listed item price.</span></div><div class="sell-list" role="list">
         <div role="listitem"><span>Diamond</span><strong>2,250 M$</strong></div>
         <div role="listitem"><span>Amethyst Shard</span><strong>450 M$</strong></div>
@@ -46,5 +57,5 @@
       <section class="card everyone"><div><p class="eyebrow">SERVER ECONOMY</p><h3>Everyone's Money</h3></div><div id="everyone" class="player-balances"></div></section>
       <section class="grid"><div class="card"><h3>Payment requests</h3><div id="requests" class="list"></div></div><div class="card"><h3>Recent activity</h3><div id="activity" class="list"></div></div></section>
     </section>
-  </main><div id="toast" role="status"></div><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="app.js"></script>
+  </main><div id="toast" role="status"></div><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="minecraft-blocks.js"></script><script src="app.js"></script>
 </body></html>
