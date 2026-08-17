@@ -71,3 +71,10 @@ test('includes secure player trading, money offers, values, and trade history',(
   assert.match(app,/tradeGetItem'\)\.value\.trim\(\).*addTradeItem\('get'\)/);
   assert.match(fs.readFileSync('./public/minecraft-blocks.js','utf8'),/"Enchanted Book"/);
 });
+test('previews totals and resulting balances for money actions',()=>{
+  const html=fs.readFileSync('./public/index.html','utf8');
+  const app=fs.readFileSync('./public/app.js','utf8');
+  for(const id of ['sendPreviewAmount','sendBalanceAfter','requestPreviewAmount','requestBalanceAfter'])assert.match(html,new RegExp(`id="${id}"`));
+  assert.match(app,/Balance after: M\$/);
+  assert.match(app,/Total: M\$/);
+});
