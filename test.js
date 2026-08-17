@@ -32,6 +32,19 @@ test('all activity is not capped and uses deterministic newest-first ordering',(
   assert.doesNotMatch(schema,/get_all_activity[\s\S]*?limit\s+100/i);
   assert.match(schema,/order by t\.created_at desc, t\.id desc/);
 });
+test('supports decimal currency and owner-managed customizable shops',()=>{
+  const html=fs.readFileSync('./public/index.html','utf8');
+  const app=fs.readFileSync('./public/app.js','utf8');
+  const schema=fs.readFileSync('./supabase/schema.sql','utf8');
+  for(const id of ['shopDescription','shopColor','shopDimension','shopX','shopY','shopZ'])assert.match(html,new RegExp(`id="${id}"`));
+  assert.match(html,/id="sendAmount"[^>]*step="0\.01"/);
+  assert.match(html,/id="requestAmount"[^>]*step="0\.01"/);
+  assert.match(html,/id="adminAmount"[^>]*step="0\.01"/);
+  for(const rpc of ['update_shop','update_shop_product','adjust_shop_stock','delete_shop_product'])assert.match(app,new RegExp(rpc));
+  assert.match(schema,/alter column balance type numeric\(18,2\)/);
+  assert.match(schema,/create or replace function public\.valid_money/);
+  assert.match(schema,/coord_x integer/);
+});
 test('Minecraft picker contains the complete 1.21.5 block dataset',()=>{
   const source = fs.readFileSync('./public/minecraft-blocks.js','utf8');
   assert.ok((source.match(/","/g)||[]).length > 1200);

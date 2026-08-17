@@ -110,6 +110,12 @@
 .shop-card h3 { font-size: 1.3rem; }
 .shop-card header { margin-bottom: 14px; }
 .shop-card header small { color: #8d98aa; }
+.shop-description { color: #bbc4d5; margin: 8px 0; }
+.shop-location { display: inline-block; color: var(--cyan); font-size: .78rem; margin-top: 4px; }
+.shop-owner-actions { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 12px; }
+.shop-owner-actions button,.listing-controls button { padding: 7px 9px; font-size: .7rem; }
+.listing-controls { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 5px; }
+.coords { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; }
 .product { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 8px 14px; align-items: center; padding: 12px 0; border-top: 1px solid #252c3b; }
 .product:first-child { border-top: 0; }
 .product p,.product small { margin: 0; }
