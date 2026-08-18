@@ -109,13 +109,16 @@ test('shop owners can securely delete their shops',()=>{
   assert.match(schema,/delete from shops where id=target_shop and owner_id=auth\.uid\(\)/);
   assert.match(schema,/grant execute on function[\s\S]*public\.delete_shop\(bigint\)/);
 });
-test('money can be hidden everywhere and the privacy choice is remembered',()=>{
+test('players can hide only their own balance from everyone else',()=>{
   const html=fs.readFileSync('./public/index.html','utf8');
   const app=fs.readFileSync('./public/app.js','utf8');
-  const css=fs.readFileSync('./public/style.css','utf8');
   assert.match(html,/id="moneyVisibility"/);
-  assert.match(app,/aetheris-hide-money/);
-  assert.match(app,/moneyHidden\?'••••':money\(n\)/);
-  assert.match(app,/classList\.toggle\('money-hidden',moneyHidden\)/);
-  assert.match(css,/\.money-hidden \.sell-list strong/);
+  assert.match(app,/u\.balance_hidden&&u\.id!==state\.me\.id\?'Hidden'/);
+  assert.match(app,/set_balance_visibility/);
+  assert.match(app,/get_player_profiles/);
+  const schema=fs.readFileSync('./supabase/schema.sql','utf8');
+  assert.match(schema,/add column if not exists balance_hidden/);
+  assert.match(schema,/case when not p\.balance_hidden or p\.id=auth\.uid\(\) then p\.balance else null end/);
+  assert.match(schema,/revoke select on public\.profiles from authenticated/);
+  assert.doesNotMatch(app,/aetheris-hide-money/);
 });
