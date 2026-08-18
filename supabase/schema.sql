@@ -563,16 +563,18 @@ $$;
 
 create or replace function public.get_player_profiles() returns table(id uuid,name text,balance numeric,is_admin boolean,balance_hidden boolean,created_at timestamptz) language sql stable security definer set search_path=public as $$
   select p.id,p.name,case when not p.balance_hidden or p.id=auth.uid() then p.balance else null end,p.is_admin,p.balance_hidden,p.created_at
-  from profiles p where auth.uid() is not null order by p.name
+  from public.profiles p where auth.uid() is not null order by p.name
 $$;
 
 create or replace function public.set_balance_visibility(hide_balance boolean) returns void language plpgsql security definer set search_path=public as $$
 begin
   if auth.uid() is null then raise exception 'Please log in'; end if;
-  update profiles set balance_hidden=coalesce(hide_balance,false) where id=auth.uid();
+  update public.profiles set balance_hidden=coalesce(hide_balance,false) where id=auth.uid();
+  if not found then raise exception 'Player profile is not ready'; end if;
 end $$;
 
 revoke select on public.profiles from authenticated;
+grant usage on schema public to authenticated;
 
 revoke all on function public.send_money(uuid,numeric,text),public.request_money(uuid,numeric,text),public.respond_request(bigint,boolean),public.admin_adjust(uuid,numeric,text),public.create_shop(text,text,text,text,integer,integer,integer),public.update_shop(bigint,text,text,text,text,integer,integer,integer),public.delete_shop(bigint),public.add_shop_product(bigint,text,numeric,bigint),public.update_shop_product(bigint,text,numeric),public.adjust_shop_stock(bigint,bigint),public.delete_shop_product(bigint),public.buy_shop_product(bigint,bigint),public.create_preorder(bigint,bigint),public.respond_preorder(bigint,boolean),public.create_trade(uuid,jsonb,jsonb,numeric,numeric),public.respond_trade(bigint,boolean),public.get_all_activity(),public.get_player_profiles(),public.set_balance_visibility(boolean) from public;
 grant execute on function public.send_money(uuid,numeric,text),public.request_money(uuid,numeric,text),public.respond_request(bigint,boolean),public.admin_adjust(uuid,numeric,text),public.create_shop(text,text,text,text,integer,integer,integer),public.update_shop(bigint,text,text,text,text,integer,integer,integer),public.delete_shop(bigint),public.add_shop_product(bigint,text,numeric,bigint),public.update_shop_product(bigint,text,numeric),public.adjust_shop_stock(bigint,bigint),public.delete_shop_product(bigint),public.buy_shop_product(bigint,bigint),public.create_preorder(bigint,bigint),public.respond_preorder(bigint,boolean),public.create_trade(uuid,jsonb,jsonb,numeric,numeric),public.respond_trade(bigint,boolean),public.get_all_activity(),public.get_player_profiles(),public.set_balance_visibility(boolean) to authenticated;

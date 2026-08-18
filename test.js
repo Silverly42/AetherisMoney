@@ -120,5 +120,10 @@ test('players can hide only their own balance from everyone else',()=>{
   assert.match(schema,/add column if not exists balance_hidden/);
   assert.match(schema,/case when not p\.balance_hidden or p\.id=auth\.uid\(\) then p\.balance else null end/);
   assert.match(schema,/revoke select on public\.profiles from authenticated/);
+  assert.match(schema,/grant usage on schema public to authenticated/);
+  const hotfix=fs.readFileSync('./supabase/balance-privacy-hotfix.sql','utf8');
+  assert.match(hotfix,/grant execute on function public\.get_player_profiles\(\) to authenticated/);
+  assert.match(hotfix,/grant execute on function public\.set_balance_visibility\(boolean\) to authenticated/);
+  assert.match(hotfix,/revoke select on public\.profiles from authenticated/);
   assert.doesNotMatch(app,/aetheris-hide-money/);
 });
