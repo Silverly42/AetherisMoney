@@ -127,3 +127,9 @@ test('players can hide only their own balance from everyone else',()=>{
   assert.match(hotfix,/revoke select on public\.profiles from authenticated/);
   assert.doesNotMatch(app,/aetheris-hide-money/);
 });
+test('hidden players have their Bank activity amounts masked from everyone else',()=>{
+  const app=fs.readFileSync('./public/app.js','utf8');
+  assert.match(app,/event\.from_name==='Bank'\?event\.to_name:event\.from_name/);
+  assert.match(app,/user\.id!==state\.me\.id&&user\.balance_hidden/);
+  assert.match(app,/hiddenPlayer\?'\?\?\?\?\?\?':money\(event\.amount\)/);
+});
