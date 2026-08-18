@@ -109,3 +109,13 @@ test('shop owners can securely delete their shops',()=>{
   assert.match(schema,/delete from shops where id=target_shop and owner_id=auth\.uid\(\)/);
   assert.match(schema,/grant execute on function[\s\S]*public\.delete_shop\(bigint\)/);
 });
+test('money can be hidden everywhere and the privacy choice is remembered',()=>{
+  const html=fs.readFileSync('./public/index.html','utf8');
+  const app=fs.readFileSync('./public/app.js','utf8');
+  const css=fs.readFileSync('./public/style.css','utf8');
+  assert.match(html,/id="moneyVisibility"/);
+  assert.match(app,/aetheris-hide-money/);
+  assert.match(app,/moneyHidden\?'••••':money\(n\)/);
+  assert.match(app,/classList\.toggle\('money-hidden',moneyHidden\)/);
+  assert.match(css,/\.money-hidden \.sell-list strong/);
+});
