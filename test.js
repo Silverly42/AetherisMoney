@@ -133,3 +133,13 @@ test('hidden players have their Bank activity amounts masked from everyone else'
   assert.match(app,/user\.id!==state\.me\.id&&user\.balance_hidden/);
   assert.match(app,/hiddenPlayer\?'\?\?\?\?\?\?':money\(event\.amount\)/);
 });
+test('shop purchases support an optional seller description',()=>{
+  const app=fs.readFileSync('./public/app.js','utf8');
+  const schema=fs.readFileSync('./supabase/schema.sql','utf8');
+  assert.match(app,/Optional description for the seller/);
+  assert.match(app,/quantity,description/);
+  assert.match(app,/event\.description/);
+  assert.match(schema,/shop_notifications add column if not exists description text/);
+  assert.match(schema,/buy_shop_product\(target_product bigint, quantity bigint default 1, description text default ''\)/);
+  assert.match(schema,/btrim\(coalesce\(description,''\)\)/);
+});
