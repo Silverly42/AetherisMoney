@@ -2,7 +2,17 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const { initialDb, amount } = require('./server');
 const fs = require('node:fs');
-test('seeds the requested accounts',()=>assert.deepEqual(initialDb().users.map(u=>u.name),['Lucca','Conor','Rhys','Aleesha']));
+test('seeds the current accounts',()=>assert.deepEqual(initialDb().users.map(u=>u.name),['Lucca','Conor','Rhys','Aleesha','Tiernan','Michael']));
+test('fully replaces Daniel with a fresh Michael account',()=>{
+  const html=fs.readFileSync('./public/index.html','utf8');
+  const schema=fs.readFileSync('./supabase/schema.sql','utf8');
+  assert.match(html,/<option>Michael<\/option>/);
+  assert.doesNotMatch(html,/Daniel/i);
+  assert.match(schema,/delete from public\.transactions where from_id=daniel_id or to_id=daniel_id/);
+  assert.match(schema,/delete from auth\.users where id=daniel_id/);
+  assert.match(schema,/check \(name in \('Lucca','Conor','Rhys','Aleesha','Tiernan','Michael'\)\)/);
+  assert.match(schema,/lower\(split_part\(email,'@',1\)\) in \('lucca','conor','rhys','aleesha','tiernan','michael'\)/);
+});
 test('accepts whole positive amounts',()=>assert.equal(amount('25'),25));
 test('rejects invalid amounts',()=>{assert.throws(()=>amount(0));assert.throws(()=>amount(1.5));assert.throws(()=>amount('no'))});
 test('shows the current sell prices',()=>{

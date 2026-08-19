@@ -3,7 +3,7 @@ create extension if not exists pgcrypto;
 
 create table if not exists public.profiles (
   id uuid primary key references auth.users(id) on delete cascade,
-  name text unique not null check (name in ('Lucca','Conor','Rhys','Aleesha','Tiernan','Daniel')),
+  name text unique not null check (name in ('Lucca','Conor','Rhys','Aleesha','Tiernan','Michael')),
   balance bigint not null default 1000 check (balance >= 0),
   is_admin boolean not null default false,
   created_at timestamptz not null default now()
@@ -12,7 +12,7 @@ create table if not exists public.profiles (
 -- Upgrade an existing installation to accept every current player.
 alter table public.profiles drop constraint if exists profiles_name_check;
 alter table public.profiles add constraint profiles_name_check
-  check (name in ('Lucca','Conor','Rhys','Aleesha','Tiernan','Daniel'));
+  check (name in ('Lucca','Conor','Rhys','Aleesha','Tiernan','Daniel','Michael'));
 alter table public.profiles add column if not exists balance_hidden boolean not null default false;
 
 create table if not exists public.transactions (
@@ -42,7 +42,7 @@ begin
   player_name := initcap(split_part(new.email, '@', 1));
   -- Never block Supabase Authentication from creating a user. Only the six
   -- approved game accounts receive a money profile.
-  if player_name is null or player_name not in ('Lucca','Conor','Rhys','Aleesha','Tiernan','Daniel') then
+  if player_name is null or player_name not in ('Lucca','Conor','Rhys','Aleesha','Tiernan','Michael') then
     return new;
   end if;
   insert into public.profiles(id,name,is_admin) values(new.id,player_name,player_name='Rhys') on conflict do nothing;
@@ -54,7 +54,7 @@ create trigger on_auth_user_created after insert on auth.users for each row exec
 -- Backfill users if they were created before this script ran.
 insert into public.profiles(id,name,is_admin)
 select id, initcap(split_part(email,'@',1)), initcap(split_part(email,'@',1))='Rhys'
-from auth.users where lower(split_part(email,'@',1)) in ('lucca','conor','rhys','aleesha','tiernan','daniel')
+from auth.users where lower(split_part(email,'@',1)) in ('lucca','conor','rhys','aleesha','tiernan','michael')
 on conflict (id) do update set
   name=excluded.name,
   is_admin=excluded.is_admin;
@@ -580,3 +580,31 @@ grant usage on schema public to authenticated;
 
 revoke all on function public.send_money(uuid,numeric,text),public.request_money(uuid,numeric,text),public.respond_request(bigint,boolean),public.admin_adjust(uuid,numeric,text),public.create_shop(text,text,text,text,integer,integer,integer),public.update_shop(bigint,text,text,text,text,integer,integer,integer),public.delete_shop(bigint),public.add_shop_product(bigint,text,numeric,bigint),public.update_shop_product(bigint,text,numeric),public.adjust_shop_stock(bigint,bigint),public.delete_shop_product(bigint),public.buy_shop_product(bigint,bigint,text),public.create_preorder(bigint,bigint),public.respond_preorder(bigint,boolean),public.create_trade(uuid,jsonb,jsonb,numeric,numeric),public.respond_trade(bigint,boolean),public.get_all_activity(),public.get_player_profiles(),public.set_balance_visibility(boolean) from public;
 grant execute on function public.send_money(uuid,numeric,text),public.request_money(uuid,numeric,text),public.respond_request(bigint,boolean),public.admin_adjust(uuid,numeric,text),public.create_shop(text,text,text,text,integer,integer,integer),public.update_shop(bigint,text,text,text,text,integer,integer,integer),public.delete_shop(bigint),public.add_shop_product(bigint,text,numeric,bigint),public.update_shop_product(bigint,text,numeric),public.adjust_shop_stock(bigint,bigint),public.delete_shop_product(bigint),public.buy_shop_product(bigint,bigint,text),public.create_preorder(bigint,bigint),public.respond_preorder(bigint,boolean),public.create_trade(uuid,jsonb,jsonb,numeric,numeric),public.respond_trade(bigint,boolean),public.get_all_activity(),public.get_player_profiles(),public.set_balance_visibility(boolean) to authenticated;
+
+-- Replace Daniel with a completely fresh Michael account ------------------
+-- Delete every app record connected to Daniel before removing his Auth user.
+-- Michael is backfilled above when michael@aetheris.money already exists; if
+-- it is created later, the new-player trigger gives it a fresh M$1,000 profile.
+do $$
+declare daniel_id uuid;
+begin
+  select id into daniel_id from public.profiles where name='Daniel';
+  if daniel_id is null then
+    select id into daniel_id from auth.users where lower(split_part(email,'@',1))='daniel' limit 1;
+  end if;
+
+  if daniel_id is not null then
+    delete from public.transactions where from_id=daniel_id or to_id=daniel_id;
+    delete from public.payment_requests where requester_id=daniel_id or payer_id=daniel_id;
+    delete from public.shop_notifications where buyer_id=daniel_id or seller_id=daniel_id;
+    delete from public.preorders where buyer_id=daniel_id or seller_id=daniel_id;
+    delete from public.trades where initiator_id=daniel_id or partner_id=daniel_id;
+    delete from public.shops where owner_id=daniel_id;
+    delete from public.profiles where id=daniel_id;
+    delete from auth.users where id=daniel_id;
+  end if;
+end $$;
+
+alter table public.profiles drop constraint if exists profiles_name_check;
+alter table public.profiles add constraint profiles_name_check
+  check (name in ('Lucca','Conor','Rhys','Aleesha','Tiernan','Michael'));
